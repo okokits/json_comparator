@@ -87,9 +87,11 @@ class AppWind(tk.Canvas):
                 elif key in value1:
                     self.add1 = new_path
                     self.differences_output.insert("end", f'{self.add1} was added to new json \n')
+                    self.found_diff = True
                 elif key in value2:
                     self.rem1 = new_path
                     self.differences_output.insert("end", f'{self.rem1} was removed from new json \n')
+                    self.found_diff = True
         elif isinstance(value1, list) and isinstance(value2, list):
             value1 = self.sorted_list(value1)
             value2 = self.sorted_list(value2)
@@ -102,20 +104,23 @@ class AppWind(tk.Canvas):
                 elif index < len1:
                     self.add2 = new_path
                     self.differences_output.insert("end", f'{self.add2} was added to new json \n')
+                    self.found_diff = True
                 else:
                     self.rem2 = new_path
                     self.differences_output.insert("end", f'{self.rem2} was removed from new json \n')
+                    self.found_diff = True
         elif value1 != value2:
             self.differences_output.insert("end", f"Different values in {path}: new json has {value1}, old json has {value2} \n")
+            self.found_diff = True
 
     def identical_check(self):
-        diff_result = self.check_diff(self.js1, self.js2)
-        if diff_result is None:
-            self.differences_output.insert("end", "there are no differences in json files")
-            self.apply_changes_button.config(state=DISABLED)
-        else:
-            diff_result
+        self.found_diff = False
+        self.check_diff(self.js1, self.js2) 
+        if self.found_diff:
             self.apply_changes_button.config(state=NORMAL)
+        else:
+            self.differences_output.insert("end", "There are no differences in json files")
+            self.apply_changes_button.config(state=DISABLED)
 
     def iterate_jsons(self, js1, js2):
 
@@ -131,11 +136,9 @@ class AppWind(tk.Canvas):
 
             if value_from_js1 is not None and value_from_js2 is None:
                 self.adding_sections(self.js2, path, value_from_js1)
-                print(f"Added section: {path}")
                 self.applied_changes.insert("end", f"Added section: {path}")
             elif value_from_js1 is None and value_from_js2 is not None:
                 self.removing_sections(self.js2, path)
-                print(f"Removed section: {path}")
                 self.applied_changes.insert("end", f"Removed section: {path}")
             elif value_from_js1 is not None and value_from_js2 is not None:
                 self.applied_changes.insert("end", f"{path} exists in both jsons")
