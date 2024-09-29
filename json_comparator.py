@@ -15,6 +15,9 @@ class AppWind(tk.Canvas):
         self.window.geometry("650x400")
         self.window.resizable(width=False, height=False)
 
+        self.first_path = ""
+        self.second_path = ""
+
         select_paths_label = tk.Label(self.window, text = "Select paths to new and old json files", bg="#f7f7f7", fg="#4f0131", font=('Helvetica 18 bold'))
         select_paths_label.grid(row = 0, column = 0, columnspan=3, ipady=57, ipadx=100, sticky=tk.EW)
         
@@ -23,40 +26,47 @@ class AppWind(tk.Canvas):
         first_path_label.grid(row = 1, column = 0, sticky=tk.E)
         second_path_label.grid(row = 2, column = 0, pady=20, sticky=tk.E)
 
-        self.first_path = tk.Button(window, bg="white", fg="black", font=('Helvetica 13'), width=35, anchor='w', command=lambda: self.return_path(self.first_path))
-        self.second_path = tk.Button(window, bg="white", fg="black", font=('Helvetica 13'), width=35, anchor='w', command=lambda: self.return_path(self.second_path))
-        self.first_path.grid(row = 1, column = 1, sticky=tk.EW)
-        self.second_path.grid(row = 2, column = 1, sticky=tk.EW, pady=20)
+        self.first_file = tk.Button(window, bg="white", fg="black", font=('Helvetica 13'), width=35, anchor='w', command=self.selected_first_file)
+        self.second_file = tk.Button(window, bg="white", fg="black", font=('Helvetica 13'), width=35, anchor='w', command=self.selected_second_file)
+        self.first_file.grid(row = 1, column = 1, sticky=tk.EW)
+        self.second_file.grid(row = 2, column = 1, sticky=tk.EW, pady=20)
 
-        first_path_button = tk.Button(window, text = 'Select File', bg="#4f0131", fg="#f7f2f5", font=('Helvetica 13'), command=lambda: self.return_path(self.first_path))
-        second_path_button = tk.Button(window, text = 'Select File', bg="#4f0131", fg="#f7f2f5", font=('Helvetica 13'), command=lambda: self.return_path(self.second_path))
-        first_path_button.grid(row = 1, column = 2, sticky=tk.EW)
-        second_path_button.grid(row = 2, column = 2, pady=20, sticky=tk.EW)
+        first_file_button = tk.Button(window, text = 'Select File', bg="#4f0131", fg="#f7f2f5", font=('Helvetica 13'), command=self.selected_first_file)
+        second_file_button = tk.Button(window, text = 'Select File', bg="#4f0131", fg="#f7f2f5", font=('Helvetica 13'), command=self.selected_second_file)
+        first_file_button.grid(row = 1, column = 2, sticky=tk.EW)
+        second_file_button.grid(row = 2, column = 2, pady=20, sticky=tk.EW)
 
         self.button_next = tk.Button(window, text = 'Next', bg="#4f0131", fg="#f7f2f5", font=('Helvetica 13'), command=self.json_import, width=12)
         self.button_next.place(x=521,y=355)
         self.button_next.config(state=DISABLED)
 
-    def path_to_file(self, file, text):
-        max_width = 42
-        if len(text) > max_width:
-            text = text[:max_width-3] + '...'
-        file.configure(text=text)
+    def selected_first_file(self):
+        self.first_path = self.return_path(self.first_file)
         self.enable_next_button()
 
-    def return_path(self, file):
-        self.file_path = filedialog.askopenfilename(initialdir="/", title="Select a file", filetypes=(("json files", "*.json*"), ("all files", "*.*")))
-        self.path_to_file(file, self.file_path)
+    def selected_second_file(self):
+        self.second_path = self.return_path(self.second_file)
+        self.enable_next_button()
+
+    def return_path(self, fld):
+        file_path = filedialog.askopenfilename(initialdir="/", title="Select a file", filetypes=(("json files", "*.json*"), ("all files", "*.*")))
+        max_width = 47
+        if len(file_path) > max_width:
+            path_ui = file_path[:max_width-3] + '...'
+        else:
+            path_ui = file_path
+        fld.configure(text=path_ui)
+        return file_path
 
     def enable_next_button(self):
-        if self.first_path.cget("text") and self.second_path.cget("text"):
+        if self.first_path and self.second_path:
             self.button_next.config(state=NORMAL)
         else:
             self.button_next.config(state=DISABLED)
 
     def json_import(self):
-        self.new_json_path = self.first_path.cget("text")
-        self.old_json_path = self.second_path.cget("text")
+        self.new_json_path = self.first_path
+        self.old_json_path = self.second_path
         try:
             with open(self.new_json_path, 'r') as js1:
                 self.js1 = json.load(js1)
@@ -272,7 +282,3 @@ window = tk.Tk()
 window.title("JSON Comparator")
 comparator = AppWind(window)
 window.mainloop()
-
-
-
- 
